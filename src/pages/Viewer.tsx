@@ -16,6 +16,7 @@ function Viewer() {
   const [loadingNew, setLoadingNew] = useState(false);
   const [viewerState, setViewerState] = useState<ViewerState | null>(null);
   const [iframeError, setIframeError] = useState(false);
+  const [iframeLoading, setIframeLoading] = useState(true);
 
   useEffect(() => {
     // Check if we have the required state data
@@ -41,6 +42,12 @@ function Viewer() {
   // Handle iframe load error
   const handleIframeError = () => {
     setIframeError(true);
+    setIframeLoading(false);
+  };
+
+  // Handle iframe load success
+  const handleIframeLoad = () => {
+    setIframeLoading(false);
   };
 
   // Load a new random site directly
@@ -54,6 +61,7 @@ function Viewer() {
         // Update the current state with new site data
         setLoading(true);
         setIframeError(false);
+        setIframeLoading(true);
         
         // Update state with new site data
         setViewerState({
@@ -123,7 +131,7 @@ function Viewer() {
       ) : (
         <div className="flex flex-col h-[calc(100vh-80px)]">
           <motion.div 
-            className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 bg-gray-800/80 backdrop-blur-sm z-10 border-b border-gray-700/50"
+            className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 bg-gray-900 backdrop-blur-sm z-10 border-b border-indigo-900/50 shadow-lg"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -170,11 +178,21 @@ function Viewer() {
           </motion.div>
           
           <motion.div 
-            className="flex-grow relative"
+            className="flex-grow relative p-4 sm:p-6 bg-gray-800"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
+            {/* Loading note banner */}
+            {iframeLoading && !iframeError && (
+              <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-20 bg-indigo-900/90 px-6 py-3 rounded-lg shadow-lg border border-indigo-700 max-w-md w-full text-center">
+                <p className="text-sm text-white">
+                  <span className="inline-block mr-2">⏳</span>
+                  Loading archived content may take some time. Older sites might load slowly or incompletely.
+                </p>
+              </div>
+            )}
+            
             {iframeError ? (
               <div className="flex flex-col items-center justify-center h-full p-4 sm:p-8 text-center">
                 <div className="text-5xl mb-6">⚠️</div>
@@ -202,13 +220,14 @@ function Viewer() {
                 </div>
               </div>
             ) : (
-              <div className="h-full w-full">
+              <div className="h-full w-full rounded-lg overflow-hidden border-2 border-indigo-800/50 shadow-[0_0_25px_rgba(79,70,229,0.15)]">
                 <iframe 
                   src={viewerState.archiveUrl}
-                  className="w-full h-full"
+                  className="w-full h-full bg-white"
                   title={`${viewerState.domain} from ${formatDate(viewerState.timestamp)}`}
                   sandbox="allow-same-origin allow-scripts allow-forms"
                   onError={handleIframeError}
+                  onLoad={handleIframeLoad}
                   referrerPolicy="no-referrer"
                 />
               </div>
